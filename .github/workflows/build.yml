@@ -1,6 +1,9 @@
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build a package
@@ -8,15 +11,12 @@ jobs:
     container: 
       image: archlinux:latest
     steps:
-      - name: Checkout the repo
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install dependencies
+      - name: Initialize
         run: |
           pacman -Syu --needed --noconfirm base-devel
-
-      - name: Initialize a build user
-        run: |
           useradd builder -m
           echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
           chmod -R a+rw .
@@ -24,3 +24,17 @@ jobs:
       - name: makepkg
         run: |
           sudo -H -u builder makepkg -sC --noconfirm
+
+      - name: Parse .SRCINFO
+        id: srcinfo
+        run: |
+          sudo -H -u builder makepkg --printsrcinfo > .SRCINFO
+          echo "version=$(grep pkgver .SRCINFO | awk '{print $3}')-$(grep pkgrel .SRCINFO | awk '{print $3}')" >> $GITHUB_OUTPUT
+
+      - name: Create new release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ steps.srcinfo.outputs.version }}
+          tag_name: ${{ steps.srcinfo.outputs.version }}
+          files:
+            st-${{ steps.srcinfo.outputs.version }}-x86_64.pkg.tar.zst
