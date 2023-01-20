@@ -8,8 +8,14 @@ arch=("x86_64")
 url="https://st.suckless.org"
 license=("MIT")
 depends=("libxft")
-source=("${pkgname}-${pkgver}::https://dl.suckless.org/$pkgname/$pkgname-$pkgver.tar.gz")
-sha256sums=("f36359799734eae785becb374063f0be833cf22f88b4f169cd251b99324e08e7")
+source=("${pkgname}-${pkgver}::https://dl.suckless.org/$pkgname/$pkgname-$pkgver.tar.gz"
+        "config.h")
+sha256sums=("f36359799734eae785becb374063f0be833cf22f88b4f169cd251b99324e08e7"
+            "8c6e61cabdd083315863c77e72ef5f669496b24863c3f1420ce83af3927da53d")
+
+prepare() {
+  cp "config.h" "$pkgname-$pkgver/config.h"
+}
 
 build() {
 	cd "$pkgname-$pkgver"
