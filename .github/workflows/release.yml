@@ -5,8 +5,8 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build a package
+  release:
+    name: Release
     runs-on: ubuntu-latest
     container: 
       image: archlinux:latest
